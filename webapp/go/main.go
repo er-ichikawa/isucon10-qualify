@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	_ "net/http/pprof"
-	l "log"
+	//_ "net/http/pprof"
+	//l "log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -242,10 +242,10 @@ func init() {
 }
 
 func main() {
-	go func() {
-	   l.Println(http.ListenAndServe("0.0.0.0:6060", nil))
-	}()
-	l.Printf("==============pprof==================")
+	// go func() {
+	//    l.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+	// }()
+	// l.Printf("==============pprof==================")
 	// Echo instance
 	e := echo.New()
 	e.Debug = true
@@ -799,12 +799,12 @@ func searchEstates(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	// searchQuery := "SELECT * FROM estate WHERE "
-	searchQuery := "SELECT name, description, thumbnail, address, latitude, longitude, rent, door_height, door_width, features, popularity FROM estate WHERE "
+	searchQuery := "SELECT * FROM estate WHERE "
+	//searchQuery := "SELECT name, description, thumbnail, address, latitude, longitude, rent, door_height, door_width, features, popularity FROM estate WHERE "
 	countQuery := "SELECT COUNT(*) FROM estate WHERE "
 	searchCondition := strings.Join(conditions, " AND ")
-	//limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
-	limitOffset := " ORDER BY popularity_desc, id ASC LIMIT ? OFFSET ?"
+	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
+	//limitOffset := " ORDER BY popularity_desc, id ASC LIMIT ? OFFSET ?"
 
 	var res EstateSearchResponse
 	err = db.Get(&res.Count, countQuery+searchCondition, params...)
