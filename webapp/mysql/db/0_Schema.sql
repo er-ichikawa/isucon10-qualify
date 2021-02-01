@@ -4,6 +4,7 @@ CREATE DATABASE isuumo;
 DROP TABLE IF EXISTS isuumo.estate;
 DROP TABLE IF EXISTS isuumo.chair;
 
+-- # generated column でカラムを追加する
 CREATE TABLE isuumo.estate
 (
     id          INTEGER             NOT NULL PRIMARY KEY,
@@ -17,8 +18,12 @@ CREATE TABLE isuumo.estate
     door_height INTEGER             NOT NULL,
     door_width  INTEGER             NOT NULL,
     features    VARCHAR(64)         NOT NULL,
-    popularity  INTEGER             NOT NULL
+    popularity  INTEGER             NOT NULL,
+    popularity_desc INTEGER AS (-popularity) NOT NULL
 );
+
+-- popularity_desc にインデックスを貼る
+ALTER TABLE isuumo.estate ADD INDEX estate_popularity_id_idx(popularity_desc, id);
 
 CREATE TABLE isuumo.chair
 (
