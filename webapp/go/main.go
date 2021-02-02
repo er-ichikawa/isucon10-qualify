@@ -75,6 +75,7 @@ type Estate struct {
 	Features    string  `db:"features" json:"features"`
 	Popularity  int64   `db:"popularity" json:"-"`
 	PopularityDesc  int64  `db:"popularity_desc" json:"-"`
+	Point       string  `db:"point" json:"-"`
 }
 
 //EstateSearchResponse estate/searchへのレスポンスの形式
@@ -882,6 +883,55 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
 }
 
+func searchEstateNazotte(c echo.Context) error {
+	coordinates := Coordinates{}
+	err := c.Bind(&coordinates)
+	if err != nil {
+		c.Echo().Logger.Infof("post search estate nazotte failed : %v", err)
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if len(coordinates.Coordinates) == 0 {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	coordinatesText :=  coordinates.coordinatesToText()
+	query := fmt.Sprintf(`
+		SELECT *
+		FROM estate
+		WHERE
+			latitude <= ?
+			AND latitude >= ?
+			AND longitude <= ?
+			AND longitude >= ?
+			AND ST_Contains(ST_PolygonFromText(%s), point)
+		ORDER BY popularity_desc ASC, id ASC
+	`, coordinatesText)
+
+	b := coordinates.getBoundingBox()
+	estates := []Estate{}
+	err = db.Select(&estates, query, b.BottomRightCorner.Latitude, b.TopLeftCorner.Latitude, b.BottomRightCorner.Longitude, b.TopLeftCorner.Longitude)
+	if err == sql.ErrNoRows {
+		c.Echo().Logger.Infof("select * from estate where latitude ...", err)
+		return c.JSON(http.StatusOK, EstateSearchResponse{Count: 0, Estates: []Estate{}})
+	} else if err != nil {
+		c.Echo().Logger.Errorf("database execution error : %v", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	var re EstateSearchResponse
+	re.Estates = []Estate{}
+	if len(estates) > NazotteLimit {
+		re.Estates = estates[:NazotteLimit]
+	} else {
+		re.Estates = estates
+	}
+	re.Count = int64(len(re.Estates))
+
+	return c.JSON(http.StatusOK, re)
+}
+
+/*
 // fix here
 // ここのロジックを直さないといけないのは何となくわかった
 // 時間がかかりそうなため、他のところを試す
@@ -937,7 +987,7 @@ func searchEstateNazotte(c echo.Context) error {
 	// 	return c.NoContent(http.StatusInternalServerError)
 	// }
 
-	/*
+	// =================
 	validatedEstate := Estate{}
 	estatesInPolygon := []Estate{}
 	c.Echo().Logger.Errorf("coordinates.coordinatesToText(): %v", coordinates.coordinatesToText())
@@ -955,7 +1005,7 @@ func searchEstateNazotte(c echo.Context) error {
 	} else {
 		estatesInPolygon = append(estatesInPolygon, validatedEstate)
 	}
-	*/
+	// ==========================
 	
 	//log.Printf("len(estatesInBoundingBox) %v", len(estatesInBoundingBox))
 	// estatesInPolygon := []Estate{}
@@ -988,6 +1038,7 @@ func searchEstateNazotte(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, re)
 }
+*/
 
 func postEstateRequestDocument(c echo.Context) error {
 	m := echo.Map{}

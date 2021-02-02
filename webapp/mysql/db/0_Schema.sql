@@ -20,16 +20,16 @@ CREATE TABLE isuumo.estate
     features    VARCHAR(64)         NOT NULL,
     popularity  INTEGER             NOT NULL,
     popularity_desc INTEGER AS (-popularity) NOT NULL,
-    geo         GEOMETRY AS (ST_GeomFromText(CONCAT('POINT(', latitude,' ', longitude, ' )'))) STORED NOT NULL
-    -- point       POINT AS (POINT(latitude, longitude)) STORED NOT NULL
+    -- geo         GEOMETRY AS (ST_GeomFromText(CONCAT('POINT(', latitude,' ', longitude, ' )'))) STORED NOT NULL
+    point       POINT AS (POINT(latitude, longitude)) STORED NOT NULL
 );
 
 -- popularity_desc にインデックスを貼る
 ALTER TABLE isuumo.estate ADD INDEX estate_popularity_id_idx(popularity_desc, id);
 -- point用
--- ALTER TABLE isuumo.estate ADD SPATIAL INDEX estate_point_idx(point);
+ALTER TABLE isuumo.estate ADD SPATIAL INDEX estate_point_idx(point);
 -- geo用
-ALTER TABLE isuumo.estate ADD SPATIAL INDEX estate_point_idx(geo);
+-- ALTER TABLE isuumo.estate ADD SPATIAL INDEX estate_point_idx(geo);
 
 
 CREATE TABLE isuumo.chair
