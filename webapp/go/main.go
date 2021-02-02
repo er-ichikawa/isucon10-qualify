@@ -522,19 +522,15 @@ func searchChairs(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	searchQuery := "SELECT * FROM chair WHERE "
+	// searchQuery := "SELECT * FROM chair WHERE "
+	searchQuery := "SELECT SQL_CALC_FOUND_ROWS * FROM chair WHERE "
 	//searchQuery := "SELECT id, name, description, thumbnail, price, height, width, depth, color, features,  FROM chair WHERE "
-	countQuery := "SELECT COUNT(*) FROM chair WHERE "
+	//countQuery := "SELECT COUNT(*) FROM chair WHERE "
 	searchCondition := strings.Join(conditions, " AND ")
 	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
 	//limitOffset := " ORDER BY popularity_desc, id ASC LIMIT ? OFFSET ?"
 
 	var res ChairSearchResponse
-	err = db.Get(&res.Count, countQuery+searchCondition, params...)
-	if err != nil {
-		c.Logger().Errorf("searchChairs DB execution error : %v", err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
 
 	chairs := []Chair{}
 	params = append(params, perPage, page*perPage)
@@ -548,6 +544,12 @@ func searchChairs(c echo.Context) error {
 	}
 
 	res.Chairs = chairs
+
+	err = db.Get(&res.Count, `SELECT FOUND_ROWS()`)
+	if err != nil {
+		c.Logger().Errorf("searchChairs DB execution error : %v", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.JSON(http.StatusOK, res)
 }
