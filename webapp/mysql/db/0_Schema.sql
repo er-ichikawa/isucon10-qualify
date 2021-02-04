@@ -22,7 +22,7 @@ CREATE TABLE isuumo.estate
     popularity_desc INTEGER AS (-popularity) NOT NULL,
     -- geo         GEOMETRY AS (ST_GeomFromText(CONCAT('POINT(', latitude,' ', longitude, ' )'))) STORED NOT NULL
     point       POINT AS (POINT(latitude, longitude)) STORED NOT NULL
-);
+)ENGINE=MyISAM;
 
 -- popularity_desc にインデックスを貼る
 ALTER TABLE isuumo.estate ADD INDEX estate_popularity_id_idx(popularity_desc, id);
