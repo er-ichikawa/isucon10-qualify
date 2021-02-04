@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	_ "net/http/pprof"
-	l "log"
+	// _ "net/http/pprof"
+	// l "log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -272,9 +272,9 @@ func init() {
 }
 
 func main() {
-	go func() {
-	   l.Println(http.ListenAndServe("0.0.0.0:6060", nil))
-	}()
+	// go func() {
+	//    l.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+	// }()
 	// Echo instance
 	e := echo.New()
 	e.Debug = true
