@@ -447,6 +447,43 @@ func postChair(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer tx.Rollback()
+
+    query := `INSERT INTO chair(id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock) VALUES `
+    recordLen := len(records)
+    for i, row := range records {
+        rm := RecordMapper{Record: row}
+        id := rm.NextInt()
+        name := rm.NextString()
+        description := rm.NextString()
+        thumbnail := rm.NextString()
+        price := rm.NextInt()
+        height := rm.NextInt()
+        width := rm.NextInt()
+        depth := rm.NextInt()
+        color := rm.NextString()
+        features := rm.NextString()
+        kind := rm.NextString()
+        popularity := rm.NextInt()
+        stock := rm.NextInt()
+        if err := rm.Err(); err != nil {
+            c.Logger().Errorf("failed to read record: %v", err)
+            return c.NoContent(http.StatusBadRequest)
+        }
+        query += fmt.Sprintf(`(%d,"%s","%s","%s","%d",%d,%d,%d,"%s","%s","%s",%d,%d)`, id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock)
+        if recordLen-1 > i {
+            query += ","
+        }
+    }
+    if _, err := tx.Exec(query); err != nil {
+        c.Logger().Errorf("failed to insert chair: %v", err)
+        return c.NoContent(http.StatusInternalServerError)
+    }
+    
+    if err := tx.Commit(); err != nil {
+        c.Logger().Errorf("failed to commit tx: %v", err)
+        return c.NoContent(http.StatusInternalServerError)
+    }
+	/*
 	for _, row := range records {
 		rm := RecordMapper{Record: row}
 		id := rm.NextInt()
@@ -476,6 +513,7 @@ func postChair(c echo.Context) error {
 		c.Logger().Errorf("failed to commit tx: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	*/
 	return c.NoContent(http.StatusCreated)
 }
 
